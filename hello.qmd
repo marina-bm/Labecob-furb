@@ -30,8 +30,17 @@ dados_eletric_BR <- WDI(country = 'BR',
                  indicator = 'EG.ELC.ACCS.ZS')
 
 #tópico 1 
-dados_filtrados <- dados_eletric %>%
-  filter(iso2c %in% c("US", "BR"))
+dados_eletric <- dados_eletric %>%
+  filter(!is.na(EG.ELC.ACCS.ZS), !is.na(year))
+
+# 3. Separar os dados por grupo
+dados_outros <- dados_eletric %>%
+  filter(!(iso2c %in% c("BR", "US")))
+
+dados_BR <- dados_eletric %>% filter(iso2c == "BR")
+dados_US <- dados_eletric %>% filter(iso2c == "US")
+
+
 
 #tópico 3
 dados_eletric_BR <- dados_eletric_BR %>%
@@ -57,27 +66,40 @@ Os Estados Unidos, desde o final do século XIX e início do século XX, viveram
 
 Nos EUA, o acesso à eletricidade já era praticamente universal em meados do século XX, enquanto no Brasil o processo de universalização foi mais intenso a partir dos anos 1990 e 2000, com programas como o **Luz para Todos**.
 
-Gráfico dados em painél:
+**Gráfico dados em painél:**
 
 ```{r}
 #| label: dados-em-painel
 #| warning: false
 #| echo: false
 
-ggplot(dados_filtrados, aes(x = year, y = EG.ELC.ACCS.ZS, color = iso2c)) +
-  geom_point(size = 2, alpha = 0.7) +
-  scale_color_manual(values = c("BR" = "green", "US" = "blue"),
-                     labels = c("BR" = "Brasil", "US" = "Estados Unidos"),
-                     name = "País") +
+ggplot() +
+  # Países em geral - cinza claro
+  geom_point(data = dados_outros, aes(x = year, y = EG.ELC.ACCS.ZS),
+             color = "gray85", alpha = 0.4, size = 1.2) +
+  
+  # Brasil - verde
+  geom_line(data = dados_BR, aes(x = year, y = EG.ELC.ACCS.ZS),
+            color = "forestgreen", linewidth = 1.2) +
+  geom_point(data = dados_BR, aes(x = year, y = EG.ELC.ACCS.ZS),
+             color = "forestgreen", size = 2) +
+  
+  # EUA - azul
+  geom_line(data = dados_US, aes(x = year, y = EG.ELC.ACCS.ZS),
+            color = "dodgerblue", linewidth = 1.2) +
+  geom_point(data = dados_US, aes(x = year, y = EG.ELC.ACCS.ZS),
+             color = "dodgerblue", size = 2) +
+  
   labs(
+    title = "Acesso à Eletricidade - Destaque: Brasil (verde) e EUA (azul)",
     x = "Ano",
-    y = "Access Eletricity",
-    title = "Acesso à Eletricidade (%) - BR vs US"
+    y = "Access Eletricity"
   ) +
   theme_minimal() +
   theme(
-    plot.title = element_text(hjust = 0.5, face = "bold"),
-    legend.position = "bottom"
+    plot.title = element_text(hjust = 0.5, size = 14, face = "bold"),
+    axis.title.x = element_text(size = 12),
+    axis.title.y = element_text(size = 12)
   )
 ```
 
@@ -85,7 +107,7 @@ ggplot(dados_filtrados, aes(x = year, y = EG.ELC.ACCS.ZS, color = iso2c)) +
 
 A diferença observada na quantidade de dados e nos índices de acesso à eletricidade globalmente entre 1990 e 2000 pode ser atribuída a dois fatores principais. O primeiro deles é a ausência de sistemas bem estruturados de coleta de dados em muitos países, especialmente nos em desenvolvimento, durante a década de 1990. Mesmo em regiões onde a eletricidade já estava disponível, frequentemente faltavam registros oficiais ou dados atualizados. Com os avanços nas tecnologias de informação e comunicação e a modernização dos sistemas estatísticos, como censos e pesquisas domiciliares, os anos 2000 resultaram em dados mais completos e confiáveis. Adicionalmente, organizações internacionais como o Banco Mundial e a ONU passaram a exigir maior transparência e padronização nos dados sobre eletrificação. O segundo fator refere-se ao crescimento efetivo do acesso à eletricidade. Durante os anos 1990, vários países, principalmente na Ásia, África e América Latina, realizaram grandes investimentos para expandir a eletrificação em áreas rurais e comunidades isoladas. Exemplos de países como China, Índia, Brasil e diversas nações africanas evidenciam esses esforços. Consequentemente, o número de pessoas com acesso à eletricidade aumentou substancialmente entre 1990 e 2000.
 
-Gráficos corte transversal:
+**Gráficos corte transversal:**
 
 ```{r}
 #| label: corte-transversal1990 
@@ -135,7 +157,7 @@ A diferença nos dados de acesso à eletricidade no Brasil entre 1990, 2000 e 20
 
 Além disso, a Eletrobras e outras empresas de distribuição trabalharam em parceria com as prefeituras e governos estaduais para levar a eletrificação a comunidades isoladas. Nos anos 2010, também houve um significativo avanço tecnológico na coleta de dados, com o IBGE e outras agências implementando censos mais detalhados, permitindo uma mensuração mais precisa do acesso à eletricidade em áreas urbanas e rurais. Esse progresso foi crucial para que, em 2020, o Brasil alcançasse 98,6% de cobertura elétrica, destacando a universalização do serviço e refletindo a redução das desigualdades regionais e sociais ao longo dessas décadas.
 
-Gráfico série temporal:
+**Gráfico série temporal:**
 
 ```{r}
 #| label: série temporal 
