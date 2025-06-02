@@ -1,0 +1,77 @@
+---
+title: "Avaliação 2- Marina Bonelli Martinotto"
+format: html
+editor: visual
+---
+
+```{r}
+#| label: load-packages
+#| include: false
+
+library(GetBCBData)
+library(dplyr)
+library(ggplot2)
+library(gganimate)
+library(scales)
+
+my.id <- c(inadimplência = 21084)
+
+df.bcb <- gbcbd_get_series(id = my.id ,
+                           first.date = '2011-03-01',
+                           last.date = Sys.Date(),
+                           format.data = 'long',
+                           use.memoise = TRUE, 
+                           cache.path = tempdir(), # use tempdir for cache folder
+                           do.parallel = FALSE)
+
+
+df.segmentos <- df.bcb %>%
+  arrange(ref.date) %>%
+  mutate(
+    xend = lead(ref.date),
+    yend = lead(value)/100,
+    ano = format(ref.date, "%Y"),
+    cor = ifelse(ano %in% c("2020","2021","2022") & format(lead(ref.date), "%Y") %in% c("2020", "2021","2022"), 
+                 "roxo", "cinza")
+  ) %>%
+  filter(!is.na(xend)) 
+
+
+```
+
+## Inadimplência da carteira de crédito-total PF
+
+A variável **21084** do Sistema Gerenciador de Séries Temporais (SGS) do Banco Central do Brasil representa a **inadimplência da carteira de crédito total das pessoas físicas**. Esse indicador mede o percentual de operações de crédito em atraso superior a 90 dias no total da carteira de crédito concedida a pessoas físicas.
+
+Monitorar essa variável é essencial, pois ela é utilizada para várias coisas, como analisar o risco sistêmico no sistema bancário, avaliar a saúde financeira das famílias brasileiras, subsidiar decisões de políticas monetárias e regulatórias, entre outros.
+
+## 2020 e 2021 x 2022
+
+Como mostra o gráfico, em 2020 houve uma queda acentuada na inadimplência da carteira de pessoa física. Esse fenômeno está diretamente ligado às medidas excepcionais adotadas durante a pandemia de Covid-19.
+
+O Banco Central e o Conselho Monetário Nacional (CMN) autorizaram os bancos a conceder carência e renegociar contratos de crédito sem necessidade de aumento nas provisões. Milhões de contratos foram renegociados ou suspensos temporariamente, o que impediu que essas operações aparecessem nas estatísticas de inadimplência.
+
+Além disso, o governo federal lançou o Auxílio Emergencial a partir de abril de 2020, com valores iniciais expressivos (R\$ 600 a R\$ 1.200). Com mais dinheiro em mãos, muitos brasileiros conseguiram pagar dívidas ou manter suas contas em dia.
+
+Outro fator relevante foi a redução dos gastos com lazer, transporte, viagens e consumo não essencial, causada pelo isolamento social, o que permitiu a algumas famílias economizar.
+
+No entanto, essa queda na inadimplência foi mais circunstancial do que estrutural. A partir de 2022, os índices voltaram a subir significativamente. Isso se deve ao fim dos auxílios emergenciais, à alta da inflação, e à retomada das políticas tradicionais de concessão e renegociação de crédito pelos bancos, entre outros fatores.
+
+**Gráfico série temporal animado:**
+
+```{r}
+#| label: série temporal 
+#| warning: false 
+#| echo: false 
+
+ggplot(df.bcb, aes(x = ref.date, y = value/100)) +
+  geom_line(color = "purple") + 
+  scale_x_date(date_breaks = "1 year", date_labels = "%Y") +
+  labs(title = 'Inadimplência da Carteira de Crédito - Total PF', 
+       subtitle = paste0(min(df.bcb$ref.date), ' to ', max(df.bcb$ref.date)),
+       x = 'anos', y = 'taxa (em %)') + 
+  theme_light()+
+  transition_reveal(ref.date)
+
+
+```
