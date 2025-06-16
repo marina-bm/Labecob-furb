@@ -1,0 +1,90 @@
+---
+title: "PRESENÇA 16/06"
+format: html
+editor: visual
+---
+
+```{r}
+#| label: load-packages
+#| include: false
+
+library(WDI)
+options(scipen = 999)
+library(tidyverse)
+library(gganimate)
+
+#install.packages("rnaturalearth")
+#install.packages("rnaturalearthdata")
+#install.packages("gganimate")
+
+
+library(rnaturalearth)
+library(rnaturalearthdata)
+
+
+#install.packages("sf")
+library(sf)
+
+library(gganimate)
+
+# Acess-eletricity, 1990-2023
+indicator <- c("Acess-eletricity" = 'EG.ELC.ACCS.ZS')
+datWM7 <- WDI(indicator, country="all", start = 1990, end = 2023)
+
+Data_info <- WDI_data
+
+name_acess_eletricity <- as.data.frame(Data_info$series) %>%
+  filter(indicator == "EG.ELC.ACCS.ZS") %>%
+  select(name)
+
+source_acess_eletricity <- as.data.frame(Data_info$series) %>%
+  filter(indicator == "EG.ELC.ACCS.ZS") %>%
+  select(sourceOrganization)
+
+
+```
+
+## Acesso à eletricidade
+
+A variável *acesso à eletricidade* mede a proporção da população de um país, região ou território que possui disponibilidade de energia elétrica em suas residências, de forma contínua e confiável. Normalmente expressa em termos percentuais, essa métrica indica, por exemplo, que um país com 98% de acesso à eletricidade tem 98% de sua população vivendo em locais onde a energia está disponível para uso doméstico, comercial ou institucional. Trata-se de um dos indicadores fundamentais de desenvolvimento socioeconômico, dado o impacto direto da eletricidade sobre áreas essenciais como saúde, educação e qualidade de vida.
+
+Este trabalho tem como objetivo analisar a evolução do acesso à eletricidade em dois países — Nigéria e Índia — considerando não apenas os dados estatísticos disponíveis, mas também os fatores socioeconômicos e estruturais que influenciam esse indicador.
+
+**Gráfico do mapa mundial animado:**
+
+```{r}
+#| label: dados-em-painel
+#| warning: false
+#| echo: false
+
+ne_countries(returnclass = "sf") %>%
+  left_join(datWM7, c("iso_a2" = "iso2c")) %>%
+  filter(iso_a2 != "ATA") %>% # remove Antarctica
+  ggplot(aes(fill = `Acess-eletricity`)) +
+  geom_sf() +
+  scale_fill_gradient2(low = "red", mid = "yellow", high = "green", midpoint = 50,
+                       labels = scales::percent_format(scale = 1))+
+  theme(legend.position="bottom") +
+  labs(
+    title = paste0(name_acess_eletricity, " in {closest_state}"),
+    fill = NULL,
+    caption = paste0("Source:", source_acess_eletricity)) + 
+  transition_states(year, transition_length = 3, state_length = 1)
+
+```
+
+## Nigéria
+
+Texto.
+
+## Índia
+
+Texto.
+
+## Conclusão
+
+Texto.
+
+## Referências
+
+Referências.
