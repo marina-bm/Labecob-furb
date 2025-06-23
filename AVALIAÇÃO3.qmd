@@ -1,0 +1,121 @@
+---
+title: "Avaliação 3 - Marina, Lígia e Maria"
+format: html
+editor: visual
+---
+
+```{r}
+#| label: load-packages
+#| include: false
+
+#GRUPO: Marina Bonelli Martinotto, Lígia Isaura Sartori, Maria Talita Carvalho Franco
+
+
+library(WDI)
+options(scipen = 999)
+library(tidyverse)
+library(gganimate)
+
+#install.packages("rnaturalearth")
+#install.packages("rnaturalearthdata")
+#install.packages("gganimate")
+
+
+library(rnaturalearth)
+library(rnaturalearthdata)
+
+
+#install.packages("sf")
+library(sf)
+
+library(gganimate)
+
+# Acess-eletricity, 1990-2023
+indicator <- c("Acess-eletricity" = 'EG.ELC.ACCS.ZS')
+datWM7 <- WDI(indicator, country="all", start = 1990, end = 2023)
+
+Data_info <- WDI_data
+
+name_acess_eletricity <- as.data.frame(Data_info$series) %>%
+  filter(indicator == "EG.ELC.ACCS.ZS") %>%
+  select(name)
+
+source_acess_eletricity <- as.data.frame(Data_info$series) %>%
+  filter(indicator == "EG.ELC.ACCS.ZS") %>%
+  select(sourceOrganization)
+
+
+```
+
+## Acesso à eletricidade
+
+A variável *acesso à eletricidade* mede a proporção da população de um país, região ou território que possui disponibilidade de energia elétrica em suas residências, de forma contínua e confiável. Normalmente expressa em termos percentuais, essa métrica indica, por exemplo, que um país com 98% de acesso à eletricidade tem 98% de sua população vivendo em locais onde a energia está disponível para uso doméstico, comercial ou institucional. Trata-se de um dos indicadores fundamentais de desenvolvimento socioeconômico, dado o impacto direto da eletricidade sobre áreas essenciais como saúde, educação e qualidade de vida.
+
+Este trabalho tem como objetivo analisar a evolução do acesso à eletricidade em dois países — Nigéria e Índia — considerando não apenas os dados estatísticos disponíveis, mas também os fatores socioeconômicos e estruturais que influenciam esse indicador.
+
+**Gráfico do mapa mundial animado:**
+
+```{r}
+#| label: dados-em-painel
+#| warning: false
+#| echo: false
+
+ne_countries(returnclass = "sf") %>%
+  left_join(datWM7, c("iso_a2" = "iso2c")) %>%
+  filter(iso_a2 != "ATA") %>% # remove Antarctica
+  ggplot(aes(fill = `Acess-eletricity`)) +
+  geom_sf() +
+  scale_fill_gradient2(low = "red", mid = "yellow", high = "green", midpoint = 50,
+                       labels = scales::percent_format(scale = 1))+
+  theme(legend.position="bottom") +
+  labs(
+    title = paste0(name_acess_eletricity, " in {closest_state}"),
+    fill = NULL,
+    caption = paste0("Source:", source_acess_eletricity)) + 
+  transition_states(year, transition_length = 3, state_length = 1)
+
+```
+
+## Nigéria
+
+A Nigéria é o país com o maior número de pessoas sem acesso à eletricidade no mundo. O problema se agravou nos últimos anos porque a população, hoje com mais de 220 milhões de habitantes, tem crescido mais rápido do que a expansão do setor elétrico. Mesmo os nigerianos que têm conexão à rede elétrica enfrentam frequentes quedas de energia, vivendo com um fornecimento instável. Milhões de pessoas ainda dependem de lenha para cozinhar e de geradores a diesel, que são barulhentos, poluentes e caros, para conseguir eletricidade de forma limitada.
+
+Nas recentes negociações climáticas em Baku, foi prometido um financiamento anual de US\$300 bilhões para países em desenvolvimento, incluindo a Nigéria, para ajudar na transição energética e no combate aos efeitos das mudanças climáticas. Porém, muitos países consideram esse valor insuficiente. A Nigéria enfrenta um desafio duplo: tirar dezenas de milhões de pessoas da pobreza e ao mesmo tempo fazer uma transição para energia limpa, com a meta de alcançar emissões líquidas zero até 2060.
+
+Mesmo sendo um grande exportador de petróleo e tendo o gás natural como principal fonte de eletricidade, o país reconhece que o futuro depende de novos projetos de energia renovável, especialmente energia solar e hidrelétrica.
+
+## Índia
+
+A trajetória da energia elétrica na Índia remonta ao período da colonização britânica, com a primeira demonstração de luz elétrica ocorrendo em Calcutá, no ano de 1879. A partir desse marco inicial, o país passou a registrar avanços significativos no setor energético, incluindo a instalação de usinas geradoras para alimentar bondes, a construção de hidrelétricas em plantações de chá, a implantação de postes de iluminação pública e o funcionamento do primeiro trem elétrico urbano.
+
+Um símbolo recente do avanço tecnológico e do compromisso com fontes limpas foi o Aeroporto Internacional de Cochin, que, em 2015, tornou-se o primeiro do mundo a operar 100% com energia solar. Esse feito evidenciou o potencial indiano no aproveitamento de fontes renováveis.
+
+A estrutura da rede elétrica indiana evoluiu gradualmente. Na década de 1960, foram estabelecidos sistemas regionais de gerenciamento por estado, e, a partir de 1990, iniciou-se a integração dessas redes em um sistema nacional, processo concluído em 2013. Essa interligação permitiu a redistribuição mais eficiente da energia entre as regiões, ajudando a minimizar os desequilíbrios entre oferta e demanda.
+
+O carvão continua sendo a principal fonte de geração elétrica no país, respondendo por cerca de 45% da produção total. Essa predominância se deve à vasta disponibilidade de reservas locais e à estabilidade oferecida por essa fonte tradicional. No entanto, os impactos ambientais do carvão são severos, incluindo a emissão de gases de efeito estufa e problemas de saúde pública relacionados à poluição atmosférica. Em resposta a esses desafios, a Índia tem investido, embora de forma gradual, em alternativas renováveis, como energia solar, eólica, hidrelétrica e nuclear. Em 2023, essas fontes representavam cerca de 30% da capacidade instalada no país, e o governo tem estabelecido metas ambiciosas de expansão.
+
+Desde 2016, a Índia se tornou exportadora líquida de eletricidade, fornecendo mais de 2 TWh por ano a países vizinhos. Paralelamente, é um dos maiores consumidores mundiais de energia, ocupando o terceiro lugar em 2022, atrás apenas da China e dos Estados Unidos. Apesar desse protagonismo, o país ainda depende fortemente da importação de combustíveis fósseis, especialmente petróleo oriundo do Oriente Médio, o que o torna suscetível a choques externos, crises geopolíticas e variações nos preços internacionais.
+
+Embora os avanços na expansão da rede elétrica sejam notáveis, o país continua enfrentando apagões frequentes. Entre as principais causas estão a demanda energética superior à capacidade de geração, sobretudo em períodos de calor intenso; a precariedade da infraestrutura elétrica, com equipamentos antigos e pouca manutenção; os efeitos de eventos climáticos extremos; e falhas técnicas ou humanas. Um dos casos mais emblemáticos foi o apagão de julho de 2012, que afetou mais de 600 milhões de pessoas e se tornou um dos maiores da história mundial.
+
+Outro ponto crítico é a desigualdade no acesso à eletricidade. O governo indiano considera uma vila eletrificada quando pelo menos 10% das residências possuem acesso básico à energia. Isso significa que, mesmo com a declaração oficial de eletrificação rural total, uma parcela significativa da população ainda enfrenta fornecimento instável, intermitente ou inexistente.
+
+Apesar dessas dificuldades, a Índia tem apresentado indicadores positivos no setor elétrico graças a uma série de fatores. Destacam-se os investimentos em infraestrutura, com a construção de novas usinas e a extensão da rede para áreas remotas; a diversificação da matriz energética, que favorece a estabilidade do fornecimento; políticas públicas eficazes, como o programa Saubhagya, que levou eletricidade a milhões de famílias; o crescimento econômico e tecnológico, que demandou uma rede mais robusta; e as parcerias internacionais, que viabilizaram projetos de energia limpa e modernização da infraestrutura.
+
+Assim, a experiência indiana evidencia os desafios enfrentados por países em desenvolvimento na busca por um sistema energético sustentável, resiliente e equitativo. O equilíbrio entre expansão do acesso, preservação ambiental e segurança energética continuará sendo uma prioridade estratégica para a Índia nas próximas décadas.
+
+## Conclusão
+
+Dessa forma, observa-se que, apesar de Nigéria e Índia serem países em desenvolvimento e enfrentarem desafios socioeconômicos semelhantes, suas trajetórias no que diz respeito ao acesso à eletricidade foram significativamente distintas. A Índia obteve avanços expressivos nas últimas décadas, promovendo a expansão da infraestrutura elétrica e implementando políticas públicas eficazes que resultaram na quase universalização do serviço. Em contrapartida, a Nigéria mantém índices preocupantes de cobertura elétrica, especialmente em regiões rurais, reflexo de entraves como instabilidade política, deficiência em investimentos e má gestão do setor. Essa disparidade evidencia a importância de estratégias governamentais bem estruturadas e sustentáveis para garantir o acesso equitativo à eletricidade, elemento essencial para o desenvolvimento social e econômico de qualquer nação.
+
+## Referências
+
+ACCESS to electricity (% of population). **World Bank Group**, 2024. Disponível em:[ ](https://data.worldbank.org/indicator/EG.ELC.ACCS.ZS)[ \<](https://apnews.com/article/nigeria-solar-grid-electricity-jobs-outages-cf157e9b321fd1ad8ad5e92f7b5d3355)<https://data.worldbank.org/indicator/EG.ELC.ACCS.ZS>\>. Acesso em: 16 jun. 2025.
+
+INDIA - Renewable Energy. **International Trade Administration**, 2024. Disponível em:[ ](https://www.trade.gov/country-commercial-guides/india-renewable-energy.)[ \<](https://apnews.com/article/nigeria-solar-grid-electricity-jobs-outages-cf157e9b321fd1ad8ad5e92f7b5d3355)[https://www.trade.gov/country-commercial-guides/india-renewable-energy](https://www.trade.gov/country-commercial-guides/india-renewable-energy.)\>. Acesso em: 16 de junho de 2025.
+
+JAGANMOHAN, Madhumitha. Electricity in India - statistics & facts. **Statista**, 2024. Disponível em:[ ](https://www.statista.com/topics/5193/electricity-in-india/.)[ \<](https://apnews.com/article/nigeria-solar-grid-electricity-jobs-outages-cf157e9b321fd1ad8ad5e92f7b5d3355)[https://www.statista.com/topics/5193/electricity-in-india/](https://www.statista.com/topics/5193/electricity-in-india/.)\>. Acesso em: 16 de junho de 2025.
+
+PHILLIS, Michael. Nigerians press for solar jobs and electricity, with little success. **AP News**, 2024. Disponível em:[\<https://apnews.com/article/cf157e9b321fd1ad8ad5e92f7b5d3355](https://apnews.com/article/nigeria-solar-grid-electricity-jobs-outages-cf157e9b321fd1ad8ad5e92f7b5d3355)\>. Acesso em: 15 jun. 2025.
+
+TREVINO, Marcella Bush. India’s Energy Consumption. **EBSCO**, 2024. Disponível em:[ ](https://www.ebsco.com/research-starters/power-and-energy/indias-energy-consumption.)[ \<](https://apnews.com/article/nigeria-solar-grid-electricity-jobs-outages-cf157e9b321fd1ad8ad5e92f7b5d3355)[https://www.ebsco.com/research-starters/power-and-energy/indias-energy-consumption](https://www.ebsco.com/research-starters/power-and-energy/indias-energy-consumption.)\>. Acesso em: 16 de junho de 2025.
